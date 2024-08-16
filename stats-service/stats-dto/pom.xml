@@ -40,6 +40,7 @@
                 <configuration>
                     <archive>
                         <manifest>
+                            <!-- Не добавляем главный класс -->
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
@@ -48,5 +49,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
