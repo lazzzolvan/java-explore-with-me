@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class EndpointHitServiceImpl implements EndpointHitService {
+
     @Autowired
     private EndpointHitRepository endpointHitRepository;
 

@@ -45,13 +45,13 @@ private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM
 
     @Override
     public List<EndpointHitStatDto> getHits(String start, String end, String[] uris, boolean unique) {
-        String cnt_query_str = "count(";
+        String query = "count(";
         if (unique) {
-            cnt_query_str += "distinct e.ip) hits ";
+            query += "distinct e.ip) hits ";
         } else {
-            cnt_query_str += "1) hits ";
+            query += "1) hits ";
         }
-        String sql = "select e.app, e.uri, " + cnt_query_str +
+        String sql = "select e.app, e.uri, " + query +
                 "from endpoint_hit e " +
                 "where e.timestamp between ? and ?";
         if (uris != null && uris.length > 0) {
