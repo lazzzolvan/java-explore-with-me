@@ -35,8 +35,8 @@ services:
       - stats-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=sa
 
   stats-db:
     image: postgres:16.1
@@ -47,5 +47,5 @@ services:
       - "6541:5432"
     environment:
       - POSTGRES_DB=stats
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=sa
