@@ -1,48 +1,51 @@
 version: '3.8'
 services:
+  ewm-service:
+    build: main-module
+    image: ewm-service-image
+    container_name: ewm-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=sa
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: ewm-db
+    volumes:
+      - /var/lib/postgresql/data
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=explore
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=sa
+
   stats-server:
-    build: ./stats-service/stats-server
+    build: stats-module/stats_server
+    image: stats-service-image
+    container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
       - stats-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
-      - SPRING_DATASOURCE_USERNAME=stats
-      - SPRING_DATASOURCE_PASSWORD=stats
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
 
   stats-db:
     image: postgres:16.1
+    container_name: stats-db
     volumes:
-      - /var/lib/postgresql/data/
+      - /var/lib/postgresql/data
     ports:
       - "6541:5432"
     environment:
       - POSTGRES_DB=stats
-      - POSTGRES_USER=stats
-      - PGUSER=stats
-      - POSTGRES_PASSWORD=stats
-
-  ewm-db:
-    image: postgres:16.1
-    volumes:
-      - /var/lib/postgresql/data/
-    ports:
-      - "6542:5432"
-    environment:
-      - POSTGRES_DB=explore
-      - POSTGRES_USER=explore
-      - PGUSER=explore
-      - POSTGRES_PASSWORD=explore
-
-  ewm-service:
-    build: ./ewm-service
-    ports:
-      - "8080:8080"
-    depends_on:
-      - ewm-db
-      - stats-server
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explore
-      - SPRING_DATASOURCE_USERNAME=explore
-      - SPRING_DATASOURCE_PASSWORD=explore
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
