@@ -9,7 +9,7 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explore
       - POSTGRES_USER=sa
       - POSTGRES_PASSWORD=sa
 
