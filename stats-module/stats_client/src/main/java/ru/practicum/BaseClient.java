@@ -16,7 +16,7 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    private static ResponseEntity<Object> prepareGatewayResponse(ResponseEntity<Object> response) {
+    private static <T> ResponseEntity<T> prepareGatewayResponse(ResponseEntity<T> response) {
         if (response.getStatusCode().is2xxSuccessful()) {
             return response;
         }
@@ -29,27 +29,29 @@ public class BaseClient {
         return responseBuilder.build();
     }
 
-    protected ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
-        return sendRequest((HttpMethod.GET), path, parameters, null);
+    protected <T> ResponseEntity<T[]> get(String path, @Nullable Map<String, Object> parameters, Class<T[]> responseType) {
+        return sendRequest((HttpMethod.GET), path, parameters, null, responseType);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, T body) {
-        return sendRequest(HttpMethod.POST, path, null, body);
+    protected <T> ResponseEntity<T> post(String path, T body, Class<T> responseType) {
+        return sendRequest(HttpMethod.POST, path, null, body, responseType);
     }
 
-    private <T> ResponseEntity<Object> sendRequest(HttpMethod method, String path,
-                                                   @Nullable Map<String, Object> parameters, @Nullable T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body, createDefaultHeaders());
+    private <T, U> ResponseEntity<T> sendRequest(HttpMethod method, String path,
+                                                 @Nullable Map<String, Object> parameters,
+                                                 @Nullable U body,
+                                                 Class<T> responseType) {
+        HttpEntity<U> requestEntity = new HttpEntity<>(body, createDefaultHeaders());
 
-        ResponseEntity<Object> response;
+        ResponseEntity<T> response;
         try {
             if (parameters != null) {
-                response = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                response = rest.exchange(path, method, requestEntity, responseType, parameters);
             } else {
-                response = rest.exchange(path, method, requestEntity, Object.class);
+                response = rest.exchange(path, method, requestEntity, responseType);
             }
         } catch (HttpStatusCodeException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
+            throw new RuntimeException();
         }
         return prepareGatewayResponse(response);
     }

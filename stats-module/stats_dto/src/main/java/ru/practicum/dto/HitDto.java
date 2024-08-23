@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import jakarta.validation.constraints.*;
-
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -29,4 +28,11 @@ public class HitDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull(message = "Дата и время запроса не может быть пустыми")
     private LocalDateTime timestamp;
+
+    public HitDto(String app, String uri, String ip, LocalDateTime timestamp) {
+        this.app = app;
+        this.uri = uri;
+        this.ip = ip;
+        this.timestamp = timestamp;
+    }
 }

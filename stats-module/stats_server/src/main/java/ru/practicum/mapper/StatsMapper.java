@@ -20,7 +20,7 @@ public class StatsMapper {
 
     public static StatsDto toDto(Stats stats) {
         return StatsDto.builder()
-                .hits(stats.getHits())
+                .hits(Math.toIntExact(stats.getHits()))
                 .app(stats.getApp())
                 .uri(stats.getUri())
                 .build();
