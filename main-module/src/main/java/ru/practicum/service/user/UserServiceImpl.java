@@ -3,12 +3,13 @@ package ru.practicum.service.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.UserMapper;
 import ru.practicum.model.user.User;
-import ru.practicum.repository.User.UserRepository;
+import ru.practicum.repository.user.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements  UserService {
         }
     }
 
+    @Transactional
     @Override
     public UserDto create(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
@@ -45,6 +47,7 @@ public class UserServiceImpl implements  UserService {
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
+    @Transactional
     @Override
     public void delete(Long userId) {
         userRepository.delete(findById(userId));
@@ -53,10 +56,5 @@ public class UserServiceImpl implements  UserService {
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("User with id=" + id + " was not found"));
-    }
-
-    private User findUserId(long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found with id:" + userId));
     }
 }

@@ -3,7 +3,6 @@ package ru.practicum.controller.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.user.UserDto;
@@ -25,14 +24,13 @@ public class AdminUserController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                  @PositiveOrZero @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                  @Positive @RequestParam(defaultValue = "10") @Positive int size) {
+                                  @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                  @Positive @RequestParam(defaultValue = "10") int size) {
         log.info("Admin: Получение информации о пользователях (ids = {}, from = {}, size = {})", ids, from, size);
         return userService.findById(ids, from, size);
     }
 
     @PostMapping
-    @Transactional
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@Valid @RequestBody UserDto  userDto) {
         log.info("Admin: Добавление нового пользователя: {}", userDto);
@@ -40,7 +38,6 @@ public class AdminUserController {
     }
 
     @DeleteMapping("/{userId}")
-    @Transactional
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteUser(@Positive @PathVariable Long userId) {
         log.info("Admin: Удаление пользователя по id: {}", userId);

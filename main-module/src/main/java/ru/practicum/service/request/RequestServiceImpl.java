@@ -13,9 +13,9 @@ import ru.practicum.model.event.EventState;
 import ru.practicum.model.request.Request;
 import ru.practicum.model.request.RequestStatus;
 import ru.practicum.model.user.User;
-import ru.practicum.repository.Event.EventRepository;
-import ru.practicum.repository.Request.RequestRepository;
-import ru.practicum.repository.User.UserRepository;
+import ru.practicum.repository.event.EventRepository;
+import ru.practicum.repository.request.RequestRepository;
+import ru.practicum.repository.user.UserRepository;
 import ru.practicum.specification.EventSpecification;
 
 import java.time.LocalDateTime;
@@ -105,11 +105,6 @@ public class RequestServiceImpl implements RequestService {
             requestRepository.save(request);
         }
         return RequestMapper.toDto(request);
-    }
-
-    private Event findById(long eventId) {
-        return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found with id: " + eventId));
     }
 
     private User findUserId(long userId) {

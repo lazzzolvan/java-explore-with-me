@@ -1,6 +1,7 @@
 package ru.practicum.service.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,13 +28,14 @@ import ru.practicum.model.event.StateAction;
 import ru.practicum.model.request.Request;
 import ru.practicum.model.request.RequestStatus;
 import ru.practicum.model.user.User;
-import ru.practicum.repository.Categories.CategoriesRepository;
-import ru.practicum.repository.Event.EventRepository;
-import ru.practicum.repository.Request.RequestRepository;
-import ru.practicum.repository.User.UserRepository;
+import ru.practicum.repository.categories.CategoriesRepository;
+import ru.practicum.repository.event.EventRepository;
+import ru.practicum.repository.request.RequestRepository;
+import ru.practicum.repository.user.UserRepository;
 import ru.practicum.specification.EventSpecification;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ import static ru.practicum.model.event.EventState.CANCELED;
 import static ru.practicum.model.event.EventState.PENDING;
 import static ru.practicum.model.event.SortType.VIEWS;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -121,15 +124,15 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto eventDto = EventMapper.toEventFullDto(event);
 
-        List<StatsDto> statistics = (List<StatsDto>) statsClient.getStatistic(
-                LocalDateTime.now().minusYears(100),
-                LocalDateTime.now().plusYears(100),
+        List<StatsDto> statistics = statsClient.getStatistic(
+                event.getPublishedOn(),
+                LocalDateTime.now(),
                 List.of("/events/" + eventId),
                 Boolean.TRUE
         );
 
         if (!statistics.isEmpty()) {
-            eventDto.setViews(statistics.get(0).getHits());
+            eventDto.setViews(statistics.getFirst().getHits());
         } else {
             eventDto.setViews(1);
         }
@@ -140,7 +143,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getUserEvents(Long userId, int from, int size) {
-        User user =  findUserId(userId);
+        User user = findUserId(userId);
         List<Event> userEvents = eventRepository.findAllByInitiator(user, PageRequest.of(from, size));
         return userEvents.stream()
                 .map(EventMapper::toEventShortDto)
@@ -323,29 +326,29 @@ public class EventServiceImpl implements EventService {
                 event.setViews(0);
             }
         }
-        System.out.println("Events = " + events);
+        log.info("Events {}", events);
         return events.stream().map(EventMapper::toEventFullDto).collect(Collectors.toList());
     }
 
     @Transactional
     public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateRequest) {
         Event event = findById(eventId);
-            Category category = getCategory(updateRequest, event);
+        Category category = getCategory(updateRequest, event);
 
-            if (updateRequest.getEventDate() != null && updateRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new ValidationException("Дата начала мероприятия не должна быть раньше, чем через час после даты публикации");
-            }
-            if ((event.getState() != EventState.PENDING) && (updateRequest.getStateAction() == StateAction.PUBLISH_EVENT)) {
-                throw new ConflictException("Невозможно опубликовать мероприятие, так как оно не находится в состоянии: ОЖИДАЕТ ПУБЛИКАЦИИ");
-            }
+        if (updateRequest.getEventDate() != null && updateRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+            throw new ValidationException("Дата начала мероприятия не должна быть раньше, чем через час после даты публикации");
+        }
+        if ((event.getState() != EventState.PENDING) && (updateRequest.getStateAction() == StateAction.PUBLISH_EVENT)) {
+            throw new ConflictException("Невозможно опубликовать мероприятие, так как оно не находится в состоянии: ОЖИДАЕТ ПУБЛИКАЦИИ");
+        }
 
-            if ((event.getState() == EventState.PUBLISHED) && (updateRequest.getStateAction() == StateAction.REJECT_EVENT)) {
-                throw new ConflictException("Невозможно отклонить мероприятие, так как оно уже опубликовано");
-            }
+        if ((event.getState() == EventState.PUBLISHED) && (updateRequest.getStateAction() == StateAction.REJECT_EVENT)) {
+            throw new ConflictException("Невозможно отклонить мероприятие, так как оно уже опубликовано");
+        }
 
-            handleStateAction(updateRequest, event);
+        handleStateAction(updateRequest, event);
 
-            EventMapper.updateEventFromRequest(event, updateRequest, category);
+        EventMapper.updateEventFromRequest(event, updateRequest, category);
 
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }

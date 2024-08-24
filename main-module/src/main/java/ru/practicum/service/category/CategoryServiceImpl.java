@@ -1,6 +1,7 @@
 package ru.practicum.service.category;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,8 +11,8 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.model.category.Category;
-import ru.practicum.repository.Categories.CategoriesRepository;
-import ru.practicum.repository.Event.EventRepository;
+import ru.practicum.repository.categories.CategoriesRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
-        List<Category> categories = categoriesRepository.findAll(PageRequest.of(from, size)).getContent();
-
-        return categories.stream()
+        return categoriesRepository.findAll(PageRequest.of(from, size)).stream()
                 .map(CategoryMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -47,14 +46,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto create(NewCategoryDto newCategoryDto) {
-        Optional<Category> existingCategory = categoriesRepository.findFirstByName(newCategoryDto.getName());
-
-        if (existingCategory.isPresent()) {
-            throw new ConflictException("Категория с таким именем уже существует");
+        try {
+            Category category = categoriesRepository.save(new Category(newCategoryDto.getName()));
+            return new CategoryDto(category.getId(), category.getName());
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(String.format("Category with name: %s already exists", newCategoryDto.getName()));
         }
-
-        Category category = categoriesRepository.save(new Category(newCategoryDto.getName()));
-        return new CategoryDto(category.getId(), category.getName());
     }
 
     @Override

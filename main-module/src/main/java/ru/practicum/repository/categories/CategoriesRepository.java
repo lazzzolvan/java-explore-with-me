@@ -1,4 +1,4 @@
-package ru.practicum.repository.Categories;
+package ru.practicum.repository.categories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
