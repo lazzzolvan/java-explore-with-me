@@ -3,15 +3,18 @@ services:
   ewm-service:
     build: main-module
     image: ewm-service-image
-    container_name: ewm-service
+    container_name: ewm-ru.practicum.service
     ports:
       - "8080:8080"
     depends_on:
       - ewm-db
+      - stats-server
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explore
       - POSTGRES_USER=sa
       - POSTGRES_PASSWORD=sa
+      - STATS_URL=http://stats-server:9090/
+    restart: on-failure
 
   ewm-db:
     image: postgres:16.1
@@ -37,6 +40,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
       - POSTGRES_USER=sa
       - POSTGRES_PASSWORD=sa
+      - STATS_URL=http://stats-server:9090/
+    restart: on-failure
 
   stats-db:
     image: postgres:16.1
